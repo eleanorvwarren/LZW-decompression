@@ -23,6 +23,7 @@ string decimal_to_binary(int dec) {
         }
         dec/=2;
     }
+    reverse(b.begin(),b.end());
     return b;
 }
 //converts binary to decimal
@@ -42,6 +43,9 @@ int binary_to_decimal(string bin) {
 
 //MAIN
 int main() {
+
+    cout << "decimal of 101010 is " << binary_to_decimal("101010") << "\n";
+    cout << "binary of 274 is " << decimal_to_binary(274) << "\n";
 
 	string filename;
 	//cout << "What file would you like to decompress?";
