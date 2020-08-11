@@ -53,10 +53,10 @@ void clear_Dict(map<unsigned int,string> &d, bool &s) {
 int main() {
 
 	string filename;
-	//cout << "What file would you like to decompress?";
-	//cin >> filename;
+	cout << "You are using Eleanor's magical LZW decompression algorithm. What file would you like to decompress? (with .z format)";
+	cin >> filename;
 	ifstream file_in;
-	file_in.open("LzwInputData/compressedfile4.z", fstream::in); // open file
+	file_in.open(filename, fstream::in); // open file
 
 
 	if (file_in.is_open()) { // file has opened successfully
@@ -103,7 +103,7 @@ int main() {
 
         // DECOMPRESSION PROCESS
         ofstream file_out;
-        file_out.open ("LzwInputData/decompressedfile4.txt"); // the decompressed file to output
+        file_out.open (filename.substr(0,filename.length()-2)+"_decompressed.txt"); // the decompressed file to output
 
         // Dictionary initialised with 0-255 ASCII characters
         map<unsigned int,string> Dict;
