@@ -39,6 +39,14 @@ int binary_to_decimal(string bin) {
     return d;
 }
 
+// clears additional entries from dictionary
+void clear_Dict(map<unsigned int,string> &d, bool &s) {
+	d.clear();
+    s = true;
+    for (int unsigned j = 0 ; j < 256 ; j++ ){
+        d[j] = string(1,j);
+    }
+}
 
 
 //MAIN
@@ -48,7 +56,7 @@ int main() {
 	//cout << "What file would you like to decompress?";
 	//cin >> filename;
 	ifstream file_in;
-	file_in.open("LzwInputData/compressedfile3.z", fstream::in); // open file
+	file_in.open("LzwInputData/compressedfile4.z", fstream::in); // open file
 
 
 	if (file_in.is_open()) { // file has opened successfully
@@ -90,57 +98,58 @@ int main() {
             cout << codes[i] << "\n";
         }
 
+
+
+
         // DECOMPRESSION PROCESS
         ofstream file_out;
-        file_out.open ("LzwInputData/decompressedfile3.txt"); // the decompressed file to output
+        file_out.open ("LzwInputData/decompressedfile4.txt"); // the decompressed file to output
 
-        // extended dictionary
-        map<int,string> Dict;
-        int dict_entries = 0;
+        // Dictionary initialised with 0-255 ASCII characters
+        map<unsigned int,string> Dict;
+        for (int unsigned i = 0 ; i < 256 ; i++ ){
+            Dict[i] = string(1,i);
+        }
+        int dict_entries = 256;
 
-        string output; // variable to store the last output to the file
-        string prev_output;
-        bool extended = false;
+
+        string prev_output; // variable to store the last/current output in order to create new dictionary entries
+        bool start = true; // bool to say whether decompression should 'start again' ie ignore previous outputs
+
         for (int i = 0; i < codes.size(); i++) {
 
-            // output current code as a string to the file
-            output = "";
-
-            if (codes[i] <= 127) { // in initial ASCII
-                output += static_cast<char>(codes[i]);
-            } else if (codes[i] <= 255) {
-                extended = true;
-                output += static_cast<char>(codes[i]);
-            } else { // in extended dictionary created by encoder
-                if (Dict.count(codes[i]) == 1) { // code in our reconstructed extended dictionary 'Dict'
-                    output += Dict[codes[i]];
-                } else if (i > 0 && Dict.count(codes[i]) == 0){ // code not yet in 'Dict' ie encoder only just added it to their dictionary
-                    // know prev code in extended dictionary of form 'cS' c=char S=string
-                    // this code must be 'cSc'
-                    Dict[codes[i]] = Dict[codes[i-1]] + Dict[codes[i-1]][0]; // add code to 'Dict'
-                    dict_entries++;
-                    output += Dict[codes[i]];
-                }
+			if (Dict.size() == 4096) { // Dictionary is full so reset it
+				clear_Dict(Dict, start);
+				dict_entries = 256;
             }
-            
-            file_out << output;
+
+
+            // output current code as a string to the file
+            if (Dict.count(codes[i]) == 1) { // code in our reconstructed Dictionary
+                file_out << Dict[codes[i]];
+            } else if (!start && Dict.count(codes[i]) == 0){ // code not yet in 'Dict' ie encoder only just added it to their dictionary
+                // know prev code in extended dictionary of form 'cS' c=char S=string, and this code must be 'cSc'
+                Dict[codes[i]] = Dict[codes[i-1]] + Dict[codes[i-1]][0]; // add code to 'Dict'
+                dict_entries++;
+                file_out << Dict[codes[i]];
+                }
 
             // define new 'Dict' entry based on current and previous codes
-            if (Dict.count(4095) == 1) { // extended dictionary is full
-                Dict.clear();
-                dict_entries = 0;
+			if (Dict.size() == 4096) { // Dictionary is full so reset it
+				clear_Dict(Dict, start);
+				dict_entries = 256;
             }
 
-            if (i>0) {
-                Dict[dict_entries + 256] = prev_output + output[0];
-                cout << Dict[dict_entries + 256] << "\n";
+            if (!start) {
+                Dict[dict_entries] = prev_output + Dict[codes[i]][0];
                 dict_entries++;
+                file_out << Dict[dict_entries]; ////// WHY IS THIS OUTPUT NECESSARY ????????????/
             }
 
-            prev_output = output;
+            prev_output = Dict[codes[i]];
+            start = false;
 
         }
-        cout << "extended cases is " << extended << "\n";
         file_out.close();
 
 
