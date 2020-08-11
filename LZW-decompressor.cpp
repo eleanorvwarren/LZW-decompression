@@ -105,12 +105,14 @@ int main() {
         ofstream file_out;
         file_out.open (filename.substr(0,filename.length()-2)+"_decompressed.txt"); // the decompressed file to output
 
+
         // Dictionary initialised with 0-255 ASCII characters
         map<unsigned int,string> Dict;
         for (int unsigned i = 0 ; i < 256 ; i++ ){
             Dict[i] = string(1,i);
         }
         int dict_entries = 256;
+
 
 
         string prev_output; // variable to store the last/current output in order to create new dictionary entries
@@ -122,7 +124,6 @@ int main() {
 				clear_Dict(Dict, start);
 				dict_entries = 256;
             }
-
 
             // output current code as a string to the file
             if (Dict.count(codes[i]) == 1) { // code in our reconstructed Dictionary
@@ -139,11 +140,10 @@ int main() {
 				clear_Dict(Dict, start);
 				dict_entries = 256;
             }
-
-            if (!start) {
+			if (!start) {
                 Dict[dict_entries] = prev_output + Dict[codes[i]][0];
                 dict_entries++;
-                file_out << Dict[dict_entries]; ////// WHY IS THIS OUTPUT NECESSARY ????????????/
+                file_out << Dict[dict_entries];
             }
 
             prev_output = Dict[codes[i]];
